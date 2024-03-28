@@ -5,14 +5,15 @@ from selenium.webdriver.chrome.options import Options
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
-options.add_argument('--window-size=1920x1080')  # 解像度を1920x1080に設定
+options.add_argument('--window-size=1920x1680')  # 解像度を4K（3840x2160）に設定
 
-service = Service(executable_path='/path/to/chromedriver')  # 適切なパスに置き換えてください
+# カレントディレクトリにあるChromedriverを指定
+service = Service(executable_path='./chromedriver.exe')
+
 driver = webdriver.Chrome(service=service, options=options)
 
 try:
-    driver.get('https://www.example.com')
-    driver.save_screenshot('screenshot_1920x1080.png')
+    driver.get('https://www.google.com')
+    driver.save_screenshot('screenshot_4k.png')
 finally:
     driver.quit()
-
