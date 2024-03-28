@@ -1,0 +1,57 @@
+新規にシートを作成し、既存シートの内容をマージするアプローチを提案できます。新しい行や画像の挿入に伴う問題を解決するのに役立ちます。この方法では、スクリプト実行時に新しいシートを作成し、そこに最新の画像を挿入した後、既存のシートの内容を新しいシートにコピーします。これにより、常に最新の画像がシートの最上部に表示され、その下に以前のデータが配置されるようになります。
+
+以下は、openpyxlライブラリを使用してこのプロセスを実装する基本的な手順です：
+
+新しいシートを作成する。
+新しいシートに画像を挿入する。
+既存のシートから新しいシートへデータをコピーする。
+ファイルを保存する。
+from openpyxl import Workbook, load_workbook
+from openpyxl.drawing.image import Image
+from openpyxl.utils import get_column_letter
+
+try:
+    wb = load_workbook('example.xlsx')
+except FileNotFoundError:
+    wb = Workbook()
+
+sheet_name = "Sheet_with_Image"
+if sheet_name not in wb.sheetnames:
+    wb.create_sheet(sheet_name)
+wb[sheet_name].move_to_end(reverse=True)
+ws_new = wb[sheet_name]
+
+img = Image('path/to/image.png')
+ws_new.add_image(img, 'A1')
+
+ws_old = wb[wb.sheetnames[-1]]  # 既存シートを選択
+for idx, row in enumerate(ws_old.iter_rows(values_only=True)):
+    if idx < 20:  # 最初の20行をスキップ
+        continue
+    ws_new.append(row)  # それ以降の行を新しいシートにコピー
+
+# 列幅の調整（オプショナル）
+for col in ws_new.columns:
+    max_length = max(len(str(cell.value)) for cell in col if cell.value)
+    adjusted_width = (max_length + 2)
+    ws_new.column_dimensions[get_column_letter(col[0].column)].width = adjusted_width
+
+wb.save('example_with_image.xlsx')
+
+このコードは、以下のステップを実行します：
+
+ワークブックの準備: 既存のワークブックをload_workbookで読み込むか、見つからない場合はWorkbookで新しいワークブックを作成します。
+
+新しいシートの作成: create_sheetで新しいシートを作成し、move_to_end(reverse=True)でこれをワークブックの先頭に配置します。
+
+画像の挿入: Imageクラスで画像を読み込み、add_imageで新しいシートのA1セルに画像を挿入します。
+
+既存シートの内容のコピー:
+
+既存シートを選択し、iter_rowsで行をイテレートします。
+最初の20行をスキップするために、イテレータのインデックスをチェックし、if idx < 20 でこれらの行をスキップします。
+それ以降の行については、appendメソッドを使用して新しいシートにコピーします。
+列幅の調整: 必要に応じて、各列の最大文字数に基づいて列幅を調整します。
+
+ワークブックの保存: 最後に、saveメソッドで変更を保存します。
+この方法で、画像を新しいシートの最上部に配置し、既存のシートから特定の行をスキップしてデータをコピーすることができます。
